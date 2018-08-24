@@ -31,6 +31,12 @@ jobs:
           command: cd docker-scripts && ./run-prod-server.sh
           background: true
       - run: sleep 30
+  test1:
+    docker:
+      - image: cypress/base:latest
+    steps:
+      - checkout
+      - setup_remote_docker
       # - restore_cache:
       #     keys:
       #       - v1-sunmait-blog-cache-{{ .Branch }}-{{ checksum "client/package-lock.json" }}
@@ -49,12 +55,6 @@ jobs:
       #     paths:
       #         - ~/.npm
       #         - ~/.cache
-  test1:
-    docker:
-      - image: cypress/base:latest
-    steps:
-      - checkout
-      - setup_remote_docker
       - run: cd client && yarn e2e-ci
 
 workflows:
