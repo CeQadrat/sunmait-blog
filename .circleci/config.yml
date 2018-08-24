@@ -6,7 +6,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/node:8.11.4
+      - image: circleci/node:latest
     steps:
       - checkout
       - setup_remote_docker
@@ -17,16 +17,20 @@ jobs:
             chmod +x ~/docker-compose
             sudo mv ~/docker-compose /usr/local/bin/docker-compose
       - run:
+          name: 'build server container'
+          command: cd docker-scripts && ./build-prod-server.sh
+      - run:
           name: 'run database'
-          command: cd docker-scripts && ./run-dev-database.sh
+          command: cd docker-scripts && ./run-prod-database.sh
           background: true
       - run:
           name: 'seed database'
-          command: cd docker-scripts && ./seed-dev-server.sh
+          command: cd docker-scripts && ./seed-prod-server.sh
       - run:
           name: 'run server'
-          command: cd docker-scripts && ./run-dev-server.sh
+          command: cd docker-scripts && ./run-prod-server.sh
           background: true
+      - run: sleep 30
       # - restore_cache:
       #     keys:
       #       - v1-sunmait-blog-cache-{{ .Branch }}-{{ checksum "client/package-lock.json" }}
@@ -39,14 +43,24 @@ jobs:
           name: 'run build client code'
           command: cd client && npm start
           background: true
+      - run: sleep 30
       # - save_cache:
       #     key: v1-sunmait-blog-cache-{{ .Branch }}-{{ checksum "client/package-lock.json" }}
       #     paths:
       #         - ~/.npm
       #         - ~/.cache
+  run-e2e-tests:
+    docker:
+      - image: cypress/base:latest
+    steps:
+      - checkout
       - run: cd client && yarn e2e-ci
+
 workflows:
   version: 2
   run_server_and_test:
     jobs:
       - build
+      - run-e2e-tests:
+        requires:
+          - build
