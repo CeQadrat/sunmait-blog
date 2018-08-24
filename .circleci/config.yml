@@ -49,18 +49,19 @@ jobs:
       #     paths:
       #         - ~/.npm
       #         - ~/.cache
-  run-e2e-tests:
+  test1:
     docker:
       - image: cypress/base:latest
     steps:
       - checkout
+      - setup_remote_docker
       - run: cd client && yarn e2e-ci
 
 workflows:
   version: 2
-  run_server_and_test:
+  build-test-and-deploy:
     jobs:
       - build
-      - run-e2e-tests:
-        requires:
-          - build
+      - test1:
+          requires:
+            - build
